@@ -1,3 +1,4 @@
+"""Собственные реализации линейных моделей для лабораторной №3."""
 from __future__ import annotations
 
 import numpy as np
@@ -17,26 +18,30 @@ from grader_contracts.linear_models import (
     RegressionResult,
 )
 
+
 def _as_2d(values):
     array = np.asarray(values, dtype=float)
     if array.ndim == 1:
         array = array.reshape(-1, 1)
     if array.ndim != 2:
-        raise ValueError("Признаки должны быть двумерным массивом")
+        raise ValueError("Признаки должны быть двумерным массивом.")
     return array
+
 
 def _sigmoid(z):
     z = np.clip(z, -500.0, 500.0)
     return 1.0 / (1.0 + np.exp(-z))
 
+
 def _fit_logistic(x_train, y_train, learning_rate, epochs):
+    """Пакетный градиентный спуск для бинарной кросс-энтропии."""
     n_samples, n_features = x_train.shape
     weights = np.zeros(n_features, dtype=float)
     bias = 0.0
     losses = []
     y = np.asarray(y_train, dtype=float).reshape(-1)
     if not np.isin(y, [0.0, 1.0]).all():
-        raise ValueError("Целевая переменная логистической регрессии должна быть 0/1")
+        raise ValueError("Целевая переменная логистической регрессии должна быть 0/1.")
 
     for _ in range(int(epochs)):
         probabilities = _sigmoid(x_train @ weights + bias)
@@ -48,6 +53,7 @@ def _fit_logistic(x_train, y_train, learning_rate, epochs):
         weights -= learning_rate * (x_train.T @ error) / n_samples
         bias -= learning_rate * float(np.mean(error))
     return weights, bias, losses
+
 
 def _classification_metrics(y_true, probabilities, predictions):
     y_true = np.asarray(y_true).reshape(-1).astype(int)
@@ -61,12 +67,14 @@ def _classification_metrics(y_true, probabilities, predictions):
         f1=float(f1_score(y_true, predictions, zero_division=0)),
     )
 
+
 def train_linear_regression(data: RegressionInput) -> RegressionResult:
+    """Обучает линейную регрессию пакетным градиентным спуском."""
     x_train = _as_2d(data.train_features)
     x_test = _as_2d(data.test_features)
     y_train = np.asarray(data.train_target, dtype=float).reshape(-1)
     if x_train.shape[0] != y_train.size:
-        raise ValueError("Число объектов и целевых значений train не совпадает")
+        raise ValueError("Число объектов и целевых значений train не совпадает.")
 
     scaler = StandardScaler()
     x_train_scaled = scaler.fit_transform(x_train)
@@ -91,6 +99,7 @@ def train_linear_regression(data: RegressionInput) -> RegressionResult:
         )
         bias_scaled -= data.learning_rate * 2.0 * float(np.mean(errors))
 
+    # Возвращаем коэффициенты в масштабе исходных признаков и исходной цели.
     weights = y_std * weights_scaled / scaler.scale_
     bias = y_mean + y_std * bias_scaled - float(np.sum(weights * scaler.mean_))
     predictions = x_test @ weights + bias
@@ -101,7 +110,9 @@ def train_linear_regression(data: RegressionInput) -> RegressionResult:
         predictions=np.asarray(predictions, dtype=float),
     )
 
+
 def train_logistic_classifier(data: ClassificationInput) -> ClassificationResult:
+    """Обучает бинарную логистическую регрессию пакетным градиентным спуском."""
     x_train = _as_2d(data.train_features)
     x_test = _as_2d(data.test_features)
     y_train = np.asarray(data.train_target, dtype=float).reshape(-1)
@@ -114,6 +125,7 @@ def train_logistic_classifier(data: ClassificationInput) -> ClassificationResult
     )
     probabilities = _sigmoid(x_test_scaled @ weights_scaled + bias_scaled)
 
+    # Представляем параметры в исходном масштабе входных признаков.
     weights = weights_scaled / scaler.scale_
     bias = float(bias_scaled - np.sum(weights * scaler.mean_))
     predictions = (probabilities >= 0.5).astype(int)
@@ -125,7 +137,13 @@ def train_logistic_classifier(data: ClassificationInput) -> ClassificationResult
         predictions=predictions,
     )
 
+
 def compare_classical_models(data: ClassificationInput) -> BaselineComparisonResult:
+    """Сравнивает sklearn LogisticRegression, дерево решений и k-NN на одном split.
+
+    Собственная логистическая регрессия оценивается отдельно в experiment_results.json,
+    поскольку контракт BaselineComparisonResult содержит только три baseline-модели.
+    """
     from sklearn.linear_model import LogisticRegression
 
     x_train = _as_2d(data.train_features)
