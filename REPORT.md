@@ -48,4 +48,4 @@ python -m pip install numpy pandas scikit-learn
 python run_experiments.py
 ```
 
-Скрипт `run_experiments.py` повторяет подготовку данных, разбиения, обучение и расчёт метрик, затем перезаписывает `experiment_results.json`. Используется `random_state=42`; версии библиотек можно зафиксировать при необходимости. Контрактные dataclass-файлы в `grader_contracts/` не изменялись.
+Скрипт `run_experiments.py` повторяет подготовку данных, разбиения, обучение и расчёт метрик, затем перезаписывает `experiment_results.json`. Используется `random_state=42`.
