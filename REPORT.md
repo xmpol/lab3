@@ -41,7 +41,7 @@
 
 ## Воспроизводимость
 
-Из корня проекта выполните:
+Команды для запуска:
 
 ```bash
 python -m pip install numpy pandas scikit-learn
