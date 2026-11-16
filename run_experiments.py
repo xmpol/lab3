@@ -1,4 +1,3 @@
-"""Воспроизводимый запуск экспериментов лабораторной №3."""
 import json
 from pathlib import Path
 
@@ -13,7 +12,6 @@ from sklearn.model_selection import train_test_split
 from grader_contracts.linear_models import RegressionInput, ClassificationInput
 from linear_models import train_linear_regression, train_logistic_classifier, compare_classical_models
 
-
 def metrics(y, probabilities, predictions):
     return {
         "roc_auc": float(roc_auc_score(y, probabilities)),
@@ -22,7 +20,6 @@ def metrics(y, probabilities, predictions):
         "recall": float(recall_score(y, predictions, zero_division=0)),
         "f1": float(f1_score(y, predictions, zero_division=0)),
     }
-
 
 def main():
     root = Path(__file__).resolve().parent
